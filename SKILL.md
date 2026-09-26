@@ -1,6 +1,6 @@
 ---
 name: yunfeng-gzh
-description: 翁老师（公众号作者"云峰"）的公众号文章全流程流水线。当用户要求"走一遍公众号流程""修订+排版+题图一条龙""按流程处理这篇文章"时使用。覆盖四步：1) 按其文风轻度修订 Markdown 原稿；2) 生成 3 个候选标题供选择；3) 调用 gzh-design skill 排版为公众号 HTML 并输出预览页；4) 调用 ian-xiaohei-illustrations skill 生成两张题图（2.35:1 头条封面 + 1:1 次条封面）。单独的修订、排版或题图请求不必用本 skill，直接用对应的单项能力即可。
+description: 敏捷思考（公众号作者"云峰"）的公众号文章全流程流水线。当用户要求"走一遍公众号流程""修订+排版+题图一条龙""按流程处理这篇文章"时使用。覆盖四步：1) 按其文风轻度修订 Markdown 原稿；2) 生成 3 个候选标题供选择；3) 调用 gzh-design skill 排版为公众号 HTML 并输出预览页；4) 调用 ian-xiaohei-illustrations skill 生成两张题图（2.35:1 头条封面 + 1:1 次条封面）。单独的修订、排版或题图请求不必用本 skill，直接用对应的单项能力即可。
 agent_created: true
 ---
 
