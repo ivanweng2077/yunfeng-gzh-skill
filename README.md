@@ -14,4 +14,7 @@ https://github.com/helloianneo/ian-xiaohei-illustrations 小黑配图工具，�
 # 如何安装
 
 把这一段话，复制后发给你的agent（比如Workbuddy，千问办公，Openclaw，Hermes agent等）
-帮我阅读并安装这个Skillhttps://github.com/ivanweng2077/yunfeng-gzh-skill/blob/main/SKILL.md
+帮我阅读并安装如下Skills
+https://github.com/ivanweng2077/yunfeng-gzh-skill/blob/main/SKILL.md
+https://github.com/isjiamu/gzh-design-skill
+https://github.com/helloianneo/ian-xiaohei-illustrations
