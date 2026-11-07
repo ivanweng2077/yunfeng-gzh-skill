@@ -14,5 +14,6 @@ https://github.com/op7418/guizang-social-card-skill 归藏的公众号配图工�
 # 如何安装
 
 把这一段话，复制后发给你的agent（比如Workbuddy，千问办公，Openclaw，Hermes agent等）
-帮我阅读并安装如下Skills
-https://github.com/ivanweng2077/yunfeng-gzh-skill/blob/main/SKILL.md
+
+_帮我阅读并安装如下Skills
+https://github.com/ivanweng2077/yunfeng-gzh-skill/blob/main/SKILL.md_
