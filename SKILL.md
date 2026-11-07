@@ -38,7 +38,7 @@ vault 根目录**只留 `.md`**。所有非 Markdown 产物一律落进 `D:\Ivan
 原稿.md ──► ① 文风修订（备份→轻度编辑→改动清单）      → 就地改 .md + `_原版.md`
        ──► ② 3 个候选标题（AskUserQuestion 选定）
        ──► ③ gzh-design 排版（HTML + 校验 + 预览页）    → output\
-       ──► ④ 小黑题图 ×2（2.35:1 + 1:1）                → assets\<简称>-illustrations\
+       ──► ④ guizang 封面对（2.35:1 + 1:1）             → assets\<简称>-illustrations\
 ```
 
 默认顺序执行，但 ④ 的题图只依赖文章主题不依赖排版结果，若图片生成额度紧张或用户催进度，③④ 可并行。
@@ -64,10 +64,12 @@ vault 根目录**只留 `.md`**。所有非 Markdown 产物一律落进 `D:\Ivan
 1. 基于修订后的正文拟 3 个标题，路子限于用户接受的钩子型：数据钩子、配置反差钩子、热点钩子、"老爷机再战五年"式短句直给。
 2. 用 AskUserQuestion 一次让用户选定，推荐项放第一位并标"(推荐)"。
 3. 选定的标题用于排版 HTML 的开篇标题；同时记住它，Step 3 排版标题区使用。
+4. **选定后立即用文字把最终标题完整回显一遍**（加书名号，如《……》），并在后续每次向用户汇报产物时都带上它——用户要求：确定的标题必须在输出里可见，不能只留在选项记录里。
 
 ## Step 3：gzh-design 排版
 
 **产物路径（本步全部 HTML 都落 `D:\Ivan\Markdown\output\`，不要写进 vault 根目录）**：
+
 - 干净正文 → `output\<文章简称>_排版_<主题中文名>(<主题标识>).html`
 - 预览页 → `output\公众号预览_<文章简称>.html`
 
@@ -77,29 +79,47 @@ vault 根目录**只留 `.md`**。所有非 Markdown 产物一律落进 `D:\Ivan
    - 第一句：`我是云峰，平时喜欢折腾工具、记录方法，也写点踩坑和翻车。`
    - 第二句：`如果你觉得今天这篇有收获，欢迎 点赞、在看、转发 三连，我们下篇见`（"点赞、在看、转发"加粗，句尾无句号）
 4. **校验**：跑 `gzh-design` 的 `validate_gzh_html.py`，要求 0 ERROR / 0 WARNING。
-5. **生成预览页（必须用本 skill 的 Node 脚本）**：跑 `scripts/build_preview.js`，它读 `gzh-design/assets/preview-template.html` 包装出带「复制到公众号」按钮的预览页，**并且由 Node 写最终中文文件名**。
+5. **⚠️ 图片块必须显式写 `text-align:center`（2026-11-01 实测坑，不可省）**：所有包 `<img>` 的容器（外层 section、figure、内层 section 三层都要写），否则浏览器把渲染内容复制进剪贴板时会按**计算值**序列化，未声明对齐的块被写成 `text-align:start`——粘贴到公众号编辑器就弹「内容结构检测：文字对齐异常（参考文档#1.6 text-align）」。实测《墨水屏》篇两个无对齐图片块恰好对应两条告警（第 14 段、第 26 段）。铁律：**产物里 text-align 只允许 `justify` 和 `center` 两个值；左对齐靠默认，右对齐用 flex，绝不写 `left`/`right`/`start`/`end`**（WebKit/Blink 会把 left 序列化成 start、right 序列化成 end）。修复时排版源文件和预览页两个文件都要改。
+6. **生成预览页（必须用本 skill 的 Node 脚本）**：跑 `scripts/build_preview.js`，它读 `gzh-design/assets/preview-template.html` 包装出带「复制到公众号」按钮的预览页，**并且由 Node 写最终中文文件名**。
    - **不要用 `gzh-design` 的 `wrap_preview.py` 出最终文件**：实测 Python 往含中文的目标路径写文件时，落盘文件名会被环境改写——`公众号预览_C盘组合拳.html` 写出去躺在磁盘上变成了 `C盘占用太大？用这套组合拳进行操作.html`，而脚本自己还回显"✓ 已生成"。同一次运行里 PIL 存图也被改过名。
    - 用法：先 Write 一个 **ASCII 文件名**的 job.json 到 `.workbuddy\`（字段：`template` 模板路径 / `content` 干净正文路径 / `out` 目标预览路径（写进 `output\`）/ `title` / 可选 `stray` 错名残留数组与 `trashDir`），再
      `node <SKILL_ROOT>\scripts\build_preview.js <job.json>`。
    - 脚本内部：写 ASCII 临时文件 → `fs.renameSync` 成正式中文名 → 自校验，结论落在 `.workbuddy\_preview_report.txt`（文件名 / `<title>` / 图片数 / 复制按钮 / 目录内含"预览"的文件列表）。
-6. **命名复核（不可省）**：
+7. **命名复核（不可省）**：
    - 最终文件：`output\公众号预览_<文章简称>.html`（不含逗号、括号、全角标点），HTML 内部 `<title>` 同名。
    - **必须用 Node 重新 `fs.readdirSync` 列一遍 `output\` 和 vault 根目录，确认那个名字确实在磁盘上、根目录没有非 md 残留**——不能只看脚本回显。发现被改错名的残留文件，移进 `.trash`，不要直接删。
-7. 排版完成后告知：结构做了哪些自拟章节（原文小节不够时需自拟并交待）、数据是否做了卡片/表格化处理。
+8. 排版完成后告知：结构做了哪些自拟章节（原文小节不够时需自拟并交待）、数据是否做了卡片/表格化处理。
 
-## Step 4：小黑题图 ×2
+## Step 4：公众号题图（guizang 封面对，2026-10-29 起）
 
-1. 调用 `ian-xiaohei-illustrations` skill，读其 `style-dna.md` 与 `prompt-template.md`，严格按小黑视觉 DNA 写提示词（纯白底、黑色手绘线稿、小黑是动作主体、标注色分工：红/橙/蓝、留白 ≥30%、每个标注只出现一次、四角无标题文字）。
-2. **生成两张**（固定约定，用户不用再交代比例）：
-   - **2.35:1 头条封面**：无原生尺寸。先按 1536×1024 生成，提示词强制"所有主体和标注压在画面中间横带（垂直中央 45%），上下留大片空白"；生成后用本 skill 的 `scripts/crop_banner.py` 居中裁切为精确 2.35:1。
-   - **1:1 次条封面**：1024×1024 直接生成，竖向构图（主体下半、元素上半）。
-3. 两张可以是同一隐喻的不同构图（如本例"吊盐水续命"），不必强行两个创意；标注文字避免重复（模型爱把某个词写两遍，提示词里写明 ONLY ONCE）。
-4. **落盘**：`D:\Ivan\Markdown\assets\<文章简称>-illustrations\`，按 skill 规范重命名（如 `01-xx-235x1.png`、`02-xx-1x1.png`）；删除生成时自动落盘的原始命名副本。**题图是"非 md 一律进 output\"这条规则的唯一例外**——`assets\` 里已有 4 个 `*-illustrations` 同款目录，题图留在那里跟该文其它配图同处一个体系；不要挪进 `output\`（会把这篇文章的图拆到两个地方）。
-5. 自查后向用户描述画面构思，并主动提供"不满意可重生成"的选项。注意：小黑是白底线稿风，用户平时题图偏好是深色石墨底扁平插画——用户点名小黑时用小黑，没点名时问一句用哪种。
+1. **调用 `guizang-social-card-skill`**（本地路径 `C:\Users\Ivan\.workbuddy\skills\guizang-social-card-skill`），走其"公众号封面对 / WeChat cover pair"分支；动手前必读它的 `references/platform-specs.md`、`references/style-system.md`、`references/theme-presets.md`、`references/title-shortener.md`、`references/production-workflow.md`。
+2. **固定产出两张**（同一 HTML 内两块 `.poster` + 组合预览区）：
+   - **头条封面 `.poster.wide`**：2100×900（21:9），放完整或近完整标题、副题和一个强视觉元素。
+   - **次条封面 `.poster.square`**：1080×1080，用 `title-shortener` 的五步法从长标题提炼短标题，**不要从 21:9 直接裁切**（skill 硬规则）。
+3. **风格与主题用 AskUserQuestion 让用户选**（Editorial / Swiss 二选一，10 套主题预设内选，不允许自定义 hex）。默认推荐 Editorial「墨水经典 ink-classic」（与排版端"石墨极简"气质一致）；深色/影调题材推荐「午夜墨 midnight-ink」；数据/测评/方法论类可推荐 Swiss + IKB 蓝。别擅自定。
+4. **渲染方式**：README 提到的 `render.mjs` 仓库里**没有**——按 `production-workflow.md` 自写一次性 Playwright 截图脚本，按节点 id 截 `#wechat-21x9`、`#wechat-1x1`、`#wechat-pair-preview`，等待 500-900ms 让字体/画布就绪。任务目录用 **ASCII 名**（放 `<工作区>\.workbuddy\gscs-<slug>\`），**勿在 skill 根目录或 vault 里建任务目录**（skill 非协商规则）。首次使用前在 skill 目录 `npm install` + `npx playwright install chromium`。
+5. **⚠️ 比例硬修正（不可省，平台判严格 2.35:1=47:20）**：guizang 的 wide 是 21:9（2.3333），直接上传头条封面会被判比例不符。渲染后必须后处理：把 2100×900 **等比放大到宽 2115**（→2115×906），再**垂直居中裁到 2115×900**（精确 2.35:1）。裁前检查页脚/页码没被切掉，被切就在海报 CSS 加底部余量重渲。1:1 的 1080×1080 不用动。落盘前用 Node 读 PNG IHDR 复核宽高。像素处理用 Pillow/Node，只写 ASCII 临时路径（见环境坑铁律）。
+6. **落盘**：任务目录里的 PNG 用 **Node `fs.copyFileSync` + `fs.renameSync`** 改成正式中文名，进 `D:\Ivan\Markdown\assets\<文章简称>-illustrations\`（如 `01-<简称>-235x1.png`、`02-<简称>-1x1.png`），沿用目录既有命名结构。
+7. **校验节奏按 skill 默认**：先出图给用户看，用户明确要查时才跑 `node validate-social-deck.mjs <task-dir>`，别自动跑（每轮多花几十秒）。
+8. 汇报时描述画面构思与主题选择理由，并主动提供"不满意可换版式/主题重渲"的选项。
+
+**小黑保留条款**：`ian-xiaohei-illustrations` 不再用于本流水线的默认题图，但**不废弃**——用户点名要小黑风（正文配图、其他场景插画、或点名"题图用小黑"）时照常走它，原流程（1536×1024 生成→裁精确 1410×600、白点拉伸等）全部不变。用户没点名且要求的是"题图/封面"时，一律走本步的 guizang 封面对。
+
+## 最终交付汇报（固定项，不可省）
+
+收尾汇报里必须包含以下内容，逐项列出，不要只甩文件：
+
+1. **最终标题**：书名号完整写出用户选定的标题（如《……》）——这是用户的明确要求，每次都要回显。
+2. 四步各自的产物清单：修订改动要点、排版结构与校验结果、封对面（题图）画面/版式描述与路径。
+3. 存疑待确认项（没动、等用户拍板的内容）。
+4. 发布操作一句话指引（预览页 → 复制 → 粘贴）。
+
 
 ## 环境坑（Windows，务必遵守）
 
 - **铁律：最终文件名一律交给 Node 写（`fs.writeFileSync` / `fs.renameSync`），Python 只许写 ASCII 临时路径。** 这条比下面所有条目都重要。本机 Python 向含中文的目标路径写文件时，落盘文件名会被环境改写（已复现两次：预览页 `公众号预览_C盘组合拳.html` → `C盘占用太大？用这套组合拳进行操作.html`；题图 `01-c-drive-combo-235x1.png` → `C盘占用太大？用这套组合拳进行操作.png`），而且**Python 不报错、脚本回显成功**——只能靠事后用 Node 列目录复核。已把这条经验做成 `scripts/build_preview.js`。
+- **「下载管理器」黑手（2026-10-03 破案）**：有个后台进程会拦截新写入的文件，按"当前文章主名"重新发出，重名加 `-1`（`文章名.html`、`文章名-1.html`）；连 `.workbuddy\` 下的 ASCII 副本也会被搬到 vault **根目录**且路径分隔符被吃掉（`.workbuddy\tmp.html` → 根目录 `.workbuddytmp.html`）。对策：① Node 写完立刻核内容（字节数 + 占位符 + 关键字），不能只看存在性；② 发现产物消失，先扫 output / 根目录 / .trash 找同尺寸文件——好坏两版常同时躺在 `文章名.html` 和 `文章名-1.html` 下，按大小+内容特征辨认后改回正式名，别急着重新生成；③ 确认不要的错名副本进 `.trash`。
+- **IMG 占位符在模板中出现多次时**，内嵌必须用 `t.split(placeholder).join(b64)`——`t.replace()` 只换第一处，封面缩略图复用正文图就会留占位残留。写完后校验 `placeholders left: none`。
 - **产物落 `output\`，vault 根目录只留 `.md`**（见上方「产物落盘位置」）。搬移/清理一律用 `fs.renameSync` 进 `output\` 或 `.trash\`，**不要用 `rm`**。收尾时用 Node 列一遍根目录，非 md 文件应为 0。
 - **搬完文件必须独立复核目录，不能把脚本自己的输出当结论。** 2026-09-24 把根目录非 md 搬进 `output\`：脚本报告"已移入 10 个、根目录只剩 .md"，事后复核发现另有 3 个 `15年前的老爷机，用Zorin OS焕发新生*.zip`（5KB 级文章导出包）在两次操作之间从整个库里消失——不在 `output\`、不在 `.trash\`、不在回收站、不在临时目录。受控实验证明 `.zip` 在本环境可正常 `renameSync`，且脚本每移一个都会 push 进清单（清单只有 10 条），故不是移动脚本所为；消失原因未查明。**教训：脚本报告后仍要重新列目录对账，"清单条数 == 预期条数"才算过，数量对不上就立刻停下报给用户，别脑补。**
 - **中文路径传给 Python 命令行会乱码/静默失败**：PowerShell 和 bash shim 都会。对策：把路径硬编码进 UTF-8 编码的 Python 包装脚本（写到 `<工作区>\.workbuddy\` 下），用 `python 包装脚本.py` 执行。要传参就用 **ASCII 名的 JSON job 文件**，别把中文塞进 argv。
@@ -109,3 +129,4 @@ vault 根目录**只留 `.md`**。所有非 Markdown 产物一律落进 `D:\Ivan
 - **PowerShell 工具在本环境不回显 stdout**：需要看输出时，把结果 `Out-File` 到 `.workbuddy\` 下的临时文件再用 Read 读；文件操作优先用 Node 而不是 PowerShell（PowerShell 的 `Remove-Item` 在本环境还常被沙箱拦下）。
 - **ImageGen 出图底色偏灰不是纯白**：落盘前用 Pillow 做白点拉伸（取亮度直方图 97 分位作白点线性拉伸，≥244 直接压 255），线条不受影响。裁 2.35:1 后检查上下边缘——被裁掉一半的红色/橙色标注残留要局部抹白。
 - **校验脚本不回显时，把输出重定向到文件再 Read，别反复盲跑。**
+- **guizang-social-card-skill（2026-10-29 接入）**：装在 `C:\Users\Ivan\.workbuddy\skills\guizang-social-card-skill`（gh 直连会 502，用 `gh-proxy.com` 前缀镜像下载 zip 后解压，目录已去掉 `-main` 后缀）。依赖 playwright：首次渲染前在 skill 目录 `npm install` + `npx playwright install chromium`。README 提到的 `render.mjs` 仓库没带——按 `references/production-workflow.md` 自写截图脚本。任务目录一律 ASCII 名（放工作区 `.workbuddy\gscs-<slug>\`），PNG 渲染出来后由 **Node** 改中文名落 `assets\<简称>-illustrations\`；头条封面必须做 21:9→2.35:1 的放大裁切（2100×900 → 2115×906 → 裁 2115×900），别直接传 21:9。
