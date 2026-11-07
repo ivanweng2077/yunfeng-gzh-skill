@@ -10,6 +10,7 @@ https://github.com/isjiamu/gzh-design-skill 优秀的公众号排版工具
 
 https://github.com/helloianneo/ian-xiaohei-illustrations 小黑配图工具，生成文章配图
 
+https://github.com/op7418/guizang-social-card-skill 归藏的公众号配图工具，用于生成公众号封面图
 
 # 如何安装
 
